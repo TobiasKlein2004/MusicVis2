@@ -2,6 +2,61 @@ import math
 import pygame
 
 
+class Ball():
+    def __init__(self, surface, position=(200, 50), radius=10, world=[]) -> None:
+        self.surface = surface
+        self.x_pos, self.y_pos = position
+        self.x_velocity = 0
+        self.y_velocity = 0
+        self.gravity = 4
+        self.radius = radius
+        # world is a list of all boxes
+        self.world = world
+
+
+    def calcAngle(self) -> float:
+        Vx, Vy = self.x_velocity, self.y_velocity*-1  # *-1 because growing y means down not up
+        return math.degrees(math.atan2(Vx,Vy))
+
+
+    def updatePhysics(self, deltaTime) -> None:
+        self.y_velocity += self.gravity * deltaTime
+
+        # Handle Collision
+        print(self.checkCollision())
+
+        self.y_pos += self.y_velocity
+        self.x_pos += self.x_velocity
+
+
+    def samplePoints(self) -> list[tuple]:
+        #   resolution: number of points to ssample on the edge
+        resolution = 12
+        degree_per_point = 360 // resolution
+
+        points = [(
+            self.x_pos + self.radius * math.cos(math.radians(i)), 
+            self.y_pos - self.radius * math.sin(math.radians(i))
+            ) for i in range(0, 360, degree_per_point)]
+        
+        # draw points
+        # for point in points:
+        #     pygame.draw.circle(self.surface, (255,0,0), (point[0], point[1]), 1)
+
+        return points
+
+    def checkCollision(self) -> bool:
+        for box in self.world:
+            if box.checkCollision(self.samplePoints()) == True: return True
+        return False
+
+    def draw(self) -> None:
+        pygame.draw.circle(self.surface, (255,255,255), (self.x_pos, self.y_pos), self.radius)
+        self.samplePoints()
+
+
+
+
 class Box():
     def __init__(self, x, y, width, height, rotation, surface, color=(255,0,255)) -> None:
         self.surface = surface
@@ -30,7 +85,7 @@ class Box():
             self.points.append((x + x_offset, y + y_offset))
 
 
-    def checkCollision(self, points: list[tuple]):
+    def checkCollision(self, points: list[tuple]) -> bool:
         # points:           List of tupels of x,y coordinates [(x,y),(x,y)]
         #                   These are the points we want to check for collision
         # rect_center:      Center of the rectangle we want to check
@@ -56,5 +111,6 @@ class Box():
         if True in collisions: return True
         return False
 
-    def draw(self):
+
+    def draw(self) -> None:
         pygame.draw.polygon(self.surface, self.color, self.points)
