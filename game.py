@@ -18,17 +18,6 @@ class Ball():
         Vx, Vy = self.x_velocity, self.y_velocity*-1  # *-1 because growing y means down not up
         return math.degrees(math.atan2(Vx,Vy))
 
-
-    def updatePhysics(self, deltaTime) -> None:
-        self.y_velocity += self.gravity * deltaTime
-
-        # Handle Collision
-        print(self.checkCollision())
-
-        self.y_pos += self.y_velocity
-        self.x_pos += self.x_velocity
-
-
     def samplePoints(self) -> list[tuple]:
         #   resolution: number of points to ssample on the edge
         resolution = 12
@@ -45,10 +34,23 @@ class Ball():
 
         return points
 
-    def checkCollision(self) -> bool:
+    def checkCollision(self):
         for box in self.world:
-            if box.checkCollision(self.samplePoints()) == True: return True
+            if box.checkCollision(self.samplePoints()) == True: return box
         return False
+    
+    def updatePhysics(self, deltaTime) -> None:
+        self.y_velocity += self.gravity * deltaTime
+
+        # Handle Collision
+        box = self.checkCollision()
+        if box:
+            print(box.rotation)
+            self.y_velocity += math.sin(math.radians(box.rotation - 90)) * 5
+            self.x_velocity += math.cos(math.radians(box.rotation - 90)) * 5
+
+        self.y_pos += self.y_velocity
+        self.x_pos += self.x_velocity
 
     def draw(self) -> None:
         pygame.draw.circle(self.surface, (255,255,255), (self.x_pos, self.y_pos), self.radius)
@@ -65,7 +67,8 @@ class Box():
         self.y = y
         self.width = width
         self.height = height
-        self.rotation = math.radians(-rotation)
+        self.rotation = rotation
+        self.rotationRadians = math.radians(-rotation)
 
         # Rotation is direction of normal
 
@@ -76,12 +79,10 @@ class Box():
         angle = math.atan2(height/2, width/2)
         # Transform that angle to reach each corner of the rectangle.
         angles = [angle, -angle + math.pi, angle + math.pi, -angle]
-        # Convert rotation from degrees to radians.
-        rot_radians = (math.pi / 180) * -1 * rotation
         # Calculate the coordinates of each point.
         for angle in angles:
-            y_offset = -1 * radius * math.sin(angle + rot_radians)
-            x_offset = radius * math.cos(angle + rot_radians)
+            y_offset = -1 * radius * math.sin(angle + self.rotationRadians)
+            x_offset = radius * math.cos(angle + self.rotationRadians)
             self.points.append((x + x_offset, y + y_offset))
 
 
@@ -98,8 +99,8 @@ class Box():
 
         # cancel out the rotation of the rect by rotation the points in the opposite direction
         points = [(
-            point[0] * math.cos(-self.rotation) + point[1] * math.sin(-self.rotation),
-            -point[0] * math.sin(-self.rotation) + point[1] * math.cos(-self.rotation)
+            point[0] * math.cos(-self.rotationRadians) + point[1] * math.sin(-self.rotationRadians),
+            -point[0] * math.sin(-self.rotationRadians) + point[1] * math.cos(-self.rotationRadians)
         ) for point in points
         ]
 

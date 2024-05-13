@@ -13,7 +13,7 @@ screen = pygame.display.set_mode((400, 400))
 pygame.display.set_caption("Gravity")
 screen.fill(BG_COLOR)
 
-box = Box(200, 200, 100, 25, 30, screen)
+box = Box(200, 200, 100, 25, 0, screen)
 ball = Ball(screen, world=[box])
 
 
