@@ -13,8 +13,9 @@ screen = pygame.display.set_mode((400, 400))
 pygame.display.set_caption("Gravity")
 screen.fill(BG_COLOR)
 
-box = Box(200, 200, 100, 25, 0, screen)
-ball = Ball(screen, world=[box])
+box1 = Box(100, 200, 100, 25, 30, screen)
+box2 = Box(350, 200, 100, 25, -30, screen)
+ball = Ball(screen, world=[box1, box2], position=(100, 50))
 
 
 running = True
@@ -27,7 +28,8 @@ while running:
     ball.updatePhysics(deltaTime)
     ball.draw()
 
-    box.draw()
+    box1.draw()
+    box2.draw()
     # x, y = 155, 170
     # print(box.checkCollision([(x,y)]))
     # pygame.draw.circle(screen, (255,0,0), (x,y), 2)

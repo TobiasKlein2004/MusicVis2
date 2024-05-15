@@ -12,11 +12,17 @@ class Ball():
         self.radius = radius
         # world is a list of all boxes
         self.world = world
-
+        # after a collsion the ball cant register another for n frames
+        self.collisionTimeout = 10
+        self.framesSinceCollsion = self.collisionTimeout + 1
+        # Debug - - - - - - - 
+        self.LifeTime = 0 # Frames since start
+        self.pastPositions = []
 
     def calcAngle(self) -> float:
         Vx, Vy = self.x_velocity, self.y_velocity*-1  # *-1 because growing y means down not up
         return math.degrees(math.atan2(Vx,Vy))
+
 
     def samplePoints(self) -> list[tuple]:
         #   resolution: number of points to ssample on the edge
@@ -34,27 +40,52 @@ class Ball():
 
         return points
 
+
     def checkCollision(self):
         for box in self.world:
             if box.checkCollision(self.samplePoints()) == True: return box
         return False
     
+
+    def bounce(self, e, theta):
+        v_normal = self.x_velocity * math.sin(theta) + self.y_velocity * math.cos(theta)
+        v_parallel = self.x_velocity * math.cos(theta) - self.y_velocity * math.sin(theta)
+        v_normal = -e * v_normal
+
+        self.x_velocity = v_parallel * math.cos(theta) + v_normal * math.sin(theta)
+        self.y_velocity = -v_parallel * math.sin(theta) + v_normal * math.cos(theta)
+
+
     def updatePhysics(self, deltaTime) -> None:
         self.y_velocity += self.gravity * deltaTime
 
         # Handle Collision
         box = self.checkCollision()
-        if box:
+        if box and self.framesSinceCollsion > self.collisionTimeout:
             print(box.rotation)
-            self.y_velocity += math.sin(math.radians(box.rotation - 90)) * 5
-            self.x_velocity += math.cos(math.radians(box.rotation - 90)) * 5
+            self.framesSinceCollsion = 0
+            bouncePower = 7
+            theta = math.radians(box.rotation - 90)
+            self.y_velocity += math.sin(theta) * bouncePower
+            self.x_velocity += math.cos(theta) * bouncePower
 
+        self.framesSinceCollsion += 1
         self.y_pos += self.y_velocity
         self.x_pos += self.x_velocity
+
 
     def draw(self) -> None:
         pygame.draw.circle(self.surface, (255,255,255), (self.x_pos, self.y_pos), self.radius)
         self.samplePoints()
+        self.debugDraw()
+    
+
+    def debugDraw(self) -> None:
+        self.LifeTime += 1
+        if self.LifeTime % 5 == 0:
+            self.pastPositions.append((self.x_pos, self.y_pos))
+        for point in self.pastPositions:
+            pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)
 
 
 
