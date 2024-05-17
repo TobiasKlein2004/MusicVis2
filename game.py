@@ -5,7 +5,9 @@ import pygame
 class Ball():
     def __init__(self, surface, position=(200, 50), radius=10, world=[]) -> None:
         self.surface = surface
+        self.windowWidth, self.windowHeight = surface.get_width(), surface.get_height()
         self.x_pos, self.y_pos = position
+        self.worldOffset = position
         self.x_velocity = 0
         self.y_velocity = 0
         self.gravity = 4
@@ -72,10 +74,16 @@ class Ball():
         self.framesSinceCollsion += 1
         self.y_pos += self.y_velocity
         self.x_pos += self.x_velocity
+        self.worldOffset = (self.x_pos - self.windowWidth//2, 
+                            self.y_pos - self.windowHeight//2)
 
 
     def draw(self) -> None:
-        pygame.draw.circle(self.surface, (255,255,255), (self.x_pos, self.y_pos), self.radius)
+        # Make true for player centric
+        if True:
+            pygame.draw.circle(self.surface, (255,255,255), (self.windowWidth//2, self.windowHeight//2), self.radius)
+        else:
+            pygame.draw.circle(self.surface, (255,255,255), (self.x_pos, self.y_pos), self.radius)
         self.samplePoints()
         self.debugDraw()
     
@@ -85,6 +93,9 @@ class Ball():
         if self.LifeTime % 5 == 0:
             self.pastPositions.append((self.x_pos, self.y_pos))
         for point in self.pastPositions:
+            # Make true for player centric
+            if True:
+                point = (point[0]-self.worldOffset[0], point[1]-self.worldOffset[1])
             pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)
 
 
@@ -144,5 +155,9 @@ class Box():
         return False
 
 
-    def draw(self) -> None:
-        pygame.draw.polygon(self.surface, self.color, self.points)
+    def draw(self, worldOffset) -> None:
+        points = self.points
+        # Make true for player centric
+        if True:
+            points = [(point[0]-worldOffset[0], point[1]-worldOffset[1]) for point in self.points]
+        pygame.draw.polygon(self.surface, self.color, points)
