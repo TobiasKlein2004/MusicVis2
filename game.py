@@ -99,7 +99,7 @@ class Ball():
             pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)
 
 
-
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 class Box():
     def __init__(self, x, y, width, height, rotation, surface, color=(255,0,255)) -> None:
@@ -161,3 +161,20 @@ class Box():
         if True:
             points = [(point[0]-worldOffset[0], point[1]-worldOffset[1]) for point in self.points]
         pygame.draw.polygon(self.surface, self.color, points)
+
+
+#  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+class Track():
+    def __init__(self, surface, function) -> None:
+        self.surface = surface
+        self.function = function
+    
+    def draw(self, worldOffset, sampleRate=1, sampleRange=50):
+        points = []
+        for x in range(-sampleRange, sampleRange, sampleRate):
+            points.append((x + self.surface.get_width()//2, 
+                           self.function(x) + self.surface.get_height()//2))
+        for point in points:
+            pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)

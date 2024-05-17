@@ -1,7 +1,7 @@
 import pygame
 import math
 
-from game import Box, Ball
+from game import Box, Ball, Track
 
 CLOCK = pygame.time.Clock()
 FPS = 60
@@ -15,6 +15,7 @@ screen.fill(BG_COLOR)
 
 box1 = Box(100, 200, 100, 25, 30, screen)
 box2 = Box(350, 200, 100, 25, -30, screen)
+track = Track(screen, lambda x: -0.05*(x**2))
 ball = Ball(screen, world=[box1, box2], position=(100, 50))
 
 worldOffset = (0, 0)
@@ -26,12 +27,13 @@ while running:
     
     deltaTime = CLOCK.tick(FPS) / 1000
 
-    ball.updatePhysics(deltaTime)
+    # ball.updatePhysics(deltaTime)
     worldOffset = ball.worldOffset
     ball.draw()
 
     box1.draw(worldOffset)
     box2.draw(worldOffset)
+    track.draw(worldOffset)
     # x, y = 155, 170
     # print(box.checkCollision([(x,y)]))
     # pygame.draw.circle(screen, (255,0,0), (x,y), 2)
