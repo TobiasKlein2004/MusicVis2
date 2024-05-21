@@ -47,9 +47,9 @@ class Ball():
 
     def checkCollision(self):
         for obj in self.world:
-            if type(obj) == type(Line):
-                if obj.checkCollsion((self.x_pos, self.y_pos), self.radius) != None:
-                    return obj, obj.checkCollsion((self.x_pos, self.y_pos), self.radius)
+            if type(obj) == type(self.sampleLine):
+                if obj.checkCollision((self.x_pos, self.y_pos), self.radius) != None:
+                    return obj, obj.checkCollision((self.x_pos, self.y_pos), self.radius)
             else:
                 if obj.checkCollision(self.samplePoints()) == True: return obj, None
         return False, None
@@ -71,19 +71,22 @@ class Ball():
         obj, pointIndex = self.checkCollision()
 
         if type(obj) == type(self.sampleLine):
+            print("line")
             point = obj.points[pointIndex]
             try:
-                dx = abs(point[0], obj.points[pointIndex+1][0])
+                dx = abs(point[0] - obj.points[pointIndex+1][0])
             except:
-                dx = abs(point[0], obj.points[pointIndex-1][0])
+                dx = abs(point[0] - obj.points[pointIndex-1][0])
             try:
-                dy = abs(point[1], obj.points[pointIndex+1][1])
+                dy = abs(point[1] - obj.points[pointIndex+1][1])
             except:
-                dy = abs(point[1], obj.points[pointIndex-1][1])
+                dy = abs(point[1] - obj.points[pointIndex-1][1])
+
             newVX = (self.x_velocity + self.y_velocity) * (dx/(dx+dy))
             newVY = (self.x_velocity + self.y_velocity) * (dy/(dx+dy))
             self.x_velocity=newVX
             self.y_velocity=newVY
+
         elif type(obj) == type(self.sampleBox):
             if self.framesSinceCollsion > self.collisionTimeout:
                 print(obj.rotation)
@@ -203,11 +206,12 @@ class Line():
             ballCenter: tupel(x, y) coordinates of the main ball
             ballRadius: float() radius of the main ball
         """
-        dx = abs(ballCenter[0]-self.points[0])
-        dy = abs(ballCenter[1]-self.points[1])
+        dx = abs(ballCenter[0]-self.points[0][0])
+        dy = abs(ballCenter[1]-self.points[0][1])
         D  = math.sqrt(dx**2 + dy**2)
+        print(D)
         
-        if D < 100:
+        if D < 200:
             for index, point in enumerate(self.points):
                 dx = abs(ballCenter[0]-point[0])
                 dy = abs(ballCenter[1]-point[1])

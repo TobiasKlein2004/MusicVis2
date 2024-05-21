@@ -16,7 +16,7 @@ screen.fill(BG_COLOR)
 box1 = Box(100, 200, 100, 25, 30, screen)
 box2 = Box(350, 200, 100, 25, -30, screen)
 track = Line(screen, lambda x: -0.01*(x)**2+100, 0)
-ball = Ball(screen, world=[box1, box2], position=(100, 50))
+ball = Ball(screen, world=[box1, box2, track], position=(170, 50))
 
 worldOffset = (0, 0)
 
