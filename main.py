@@ -1,7 +1,7 @@
 import pygame
 import math
 
-from game import Box, Ball, Track
+from game import Box, Ball, Line
 
 CLOCK = pygame.time.Clock()
 FPS = 60
@@ -15,7 +15,7 @@ screen.fill(BG_COLOR)
 
 box1 = Box(100, 200, 100, 25, 30, screen)
 box2 = Box(350, 200, 100, 25, -30, screen)
-track = Track(screen, lambda x: -0.05*(x**2))
+track = Line(screen, lambda x: -0.05*(x**2))
 ball = Ball(screen, world=[box1, box2], position=(100, 50))
 
 worldOffset = (0, 0)

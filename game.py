@@ -166,7 +166,7 @@ class Box():
 #  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-class Track():
+class Line():
     def __init__(self, surface, function) -> None:
         self.surface = surface
         self.function = function
@@ -176,5 +176,7 @@ class Track():
         for x in range(-sampleRange, sampleRange, sampleRate):
             points.append((x + self.surface.get_width()//2, 
                            self.function(x) + self.surface.get_height()//2))
-        for point in points:
-            pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)
+        # for point in points:
+        #     pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)
+        for i in range(len(points)-1):
+            pygame.draw.line(self.surface, (0, 255, 0), points[i], points[i+1])
