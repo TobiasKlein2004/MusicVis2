@@ -20,6 +20,8 @@ class Ball():
         # Debug - - - - - - - 
         self.LifeTime = 0 # Frames since start
         self.pastPositions = []
+        self.sampleBox = Box(0,0,0,0,0,surface)
+        self.sampleLine = Line(surface, lambda x: x, 0)
 
     def calcAngle(self) -> float:
         Vx, Vy = self.x_velocity, self.y_velocity*-1  # *-1 because growing y means down not up
@@ -44,9 +46,13 @@ class Ball():
 
 
     def checkCollision(self):
-        for box in self.world:
-            if box.checkCollision(self.samplePoints()) == True: return box
-        return False
+        for obj in self.world:
+            if type(obj) == type(Line):
+                if obj.checkCollsion((self.x_pos, self.y_pos), self.radius) != None:
+                    return obj, obj.checkCollsion((self.x_pos, self.y_pos), self.radius)
+            else:
+                if obj.checkCollision(self.samplePoints()) == True: return obj, None
+        return False, None
     
 
     def bounce(self, e, theta):
@@ -62,14 +68,30 @@ class Ball():
         self.y_velocity += self.gravity * deltaTime
 
         # Handle Collision
-        box = self.checkCollision()
-        if box and self.framesSinceCollsion > self.collisionTimeout:
-            print(box.rotation)
-            self.framesSinceCollsion = 0
-            bouncePower = 7
-            theta = math.radians(box.rotation - 90)
-            self.y_velocity += math.sin(theta) * bouncePower
-            self.x_velocity += math.cos(theta) * bouncePower
+        obj, pointIndex = self.checkCollision()
+
+        if type(obj) == type(self.sampleLine):
+            point = obj.points[pointIndex]
+            try:
+                dx = abs(point[0], obj.points[pointIndex+1][0])
+            except:
+                dx = abs(point[0], obj.points[pointIndex-1][0])
+            try:
+                dy = abs(point[1], obj.points[pointIndex+1][1])
+            except:
+                dy = abs(point[1], obj.points[pointIndex-1][1])
+            newVX = (self.x_velocity + self.y_velocity) * (dx/(dx+dy))
+            newVY = (self.x_velocity + self.y_velocity) * (dy/(dx+dy))
+            self.x_velocity=newVX
+            self.y_velocity=newVY
+        elif type(obj) == type(self.sampleBox):
+            if self.framesSinceCollsion > self.collisionTimeout:
+                print(obj.rotation)
+                self.framesSinceCollsion = 0
+                bouncePower = 7
+                theta = math.radians(obj.rotation - 90)
+                self.y_velocity += math.sin(theta) * bouncePower
+                self.x_velocity += math.cos(theta) * bouncePower
 
         self.framesSinceCollsion += 1
         self.y_pos += self.y_velocity
@@ -167,16 +189,38 @@ class Box():
 
 
 class Line():
-    def __init__(self, surface, function) -> None:
+    def __init__(self, surface, function, xOffset, sampleRate=5, sampleRange=100) -> None:
         self.surface = surface
         self.function = function
-    
-    def draw(self, worldOffset, sampleRate=1, sampleRange=50):
-        points = []
-        for x in range(-sampleRange, sampleRange, sampleRate):
-            points.append((x + self.surface.get_width()//2, 
+        self.points = []
+        for x in range(-sampleRange+xOffset, sampleRange+xOffset, sampleRate):
+            self.points.append((x + self.surface.get_width()//2, 
                            self.function(x) + self.surface.get_height()//2))
-        # for point in points:
-        #     pygame.draw.circle(self.surface, (0,255,0), (point[0], point[1]), 1)
+
+
+    def checkCollision(self, ballCenter, ballRadius) -> tuple | None:
+        """
+            ballCenter: tupel(x, y) coordinates of the main ball
+            ballRadius: float() radius of the main ball
+        """
+        dx = abs(ballCenter[0]-self.points[0])
+        dy = abs(ballCenter[1]-self.points[1])
+        D  = math.sqrt(dx**2 + dy**2)
+        
+        if D < 100:
+            for index, point in enumerate(self.points):
+                dx = abs(ballCenter[0]-point[0])
+                dy = abs(ballCenter[1]-point[1])
+                D  = math.sqrt(dx**2 + dy**2)
+                if D < ballRadius:
+                    return index
+        return None
+    
+
+    def draw(self, worldOffset):
+        points = [(point[0] - worldOffset[0], point[1] - worldOffset[1])
+                  for point in self.points]
         for i in range(len(points)-1):
             pygame.draw.line(self.surface, (0, 255, 0), points[i], points[i+1])
+        # for point in points:
+        #     pygame.draw.circle(self.surface, (0,0,0), (point[0], point[1]), 2)

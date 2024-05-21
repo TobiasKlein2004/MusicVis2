@@ -15,7 +15,7 @@ screen.fill(BG_COLOR)
 
 box1 = Box(100, 200, 100, 25, 30, screen)
 box2 = Box(350, 200, 100, 25, -30, screen)
-track = Line(screen, lambda x: -0.05*(x**2))
+track = Line(screen, lambda x: -0.01*(x)**2+100, 0)
 ball = Ball(screen, world=[box1, box2], position=(100, 50))
 
 worldOffset = (0, 0)
@@ -27,7 +27,7 @@ while running:
     
     deltaTime = CLOCK.tick(FPS) / 1000
 
-    # ball.updatePhysics(deltaTime)
+    ball.updatePhysics(deltaTime)
     worldOffset = ball.worldOffset
     ball.draw()
 
